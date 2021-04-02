@@ -6,9 +6,9 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_we
 // Create our map, giving it the streetmap and earthquakes layers to display on load
 var myMap = L.map("map", {
   center: [
-    37.09, -95.71 // not sure what this is pointing to so might update center
+    40.7608, -111.8910 // not sure what this is pointing to so might update center, had been using 37.09, -95.71
   ],
-  zoom: 5,
+  zoom: 4,
   //layers: [streetmap, earthquakeLayer]
 });
 
@@ -48,22 +48,22 @@ d3.json(queryUrl, function(data) {
         // Conditionals for countries points
         var color = "";
         if (earthquakeData[i].properties.mag > 5) {
-            color = "red";
+            color = '#cd3232';
         }
         else if (earthquakeData[i].properties.mag > 4) {
-            color = "orange";
+            color = '#cd5932';
         }
         else if (earthquakeData[i].properties.mag > 3) {
-            color = "yellow";
+            color = '#cd8032';
         }
         else if (earthquakeData[i].properties.mag > 2) {
-            color = "green";
+            color = '#cda632';
         }
         else if (earthquakeData[i].properties.mag > 1) {
-            color = "green";
+            color = '#cdcd32';
         }
         else {
-            color = "green";
+            color = '#a6cd32';
         }
         //console.log(color);
         // obtaining coordinates of earthquake
@@ -74,7 +74,7 @@ d3.json(queryUrl, function(data) {
             fillOpacity: 0.75,
             color: color,
             fillColor: color,
-            radius: earthquakeData[i].properties.mag * 8000 // Adjust radius
+            radius: earthquakeData[i].properties.mag * 3000 // Adjust radius
             }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " + earthquakeData[i].properties.mag).addTo(myMap);
         
         //earthquakes.addTo(myMap);
@@ -88,6 +88,41 @@ d3.json(queryUrl, function(data) {
     //createMap(L.layerGroup(earthquakeLayer));
     // Sending our earthquakes layer to the createMap function
     //createMap(earthquakeLayer);
+
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (myMap) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 1, 2, 3, 4, 5]
+            labels = [];
+
+        function getColor(d) {
+              return d > 5  ? '#cd3232' :
+                     d > 4  ? '#cd5932' :
+                     d > 3  ? '#cd8032' :
+                     d > 2  ? '#cda632' :
+                     d > 1  ? '#cdcd32' :
+                              '#a6cd32' ;
+          }
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
+
+        return div;
+    };
+
+    legend.addTo(myMap);
+
+
+
+
+
+
 });
 
 
