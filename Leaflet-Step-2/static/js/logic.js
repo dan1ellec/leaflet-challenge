@@ -11,150 +11,104 @@
 
 //function layers(earthquakeUrl, tectonicPath) {
 
-  var earthquakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+var earthquakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
   //  will activate at the bottom of the page 
   
-  var tectonicPath = "static/data/plates.json";
+var tectonicPath = "static/data/plates.json";
 
     // function to create the markers for earthquake data
     // Performing a GET request to the query URL using d3
-    d3.json(earthquakeUrl, function(data) {
-        // Once we get a response, send the data.features object to the createFeatures function
-        console.log(data.features);
+d3.json(earthquakeUrl, function(data) {
 
-        var earthquakeData = data.features;
+  // Once we get a response, send the data.features object to the createFeatures function
+  console.log(data.features);
 
-        var earthquakeMarkers = [];
+  var earthquakeData = data.features;
 
-        // Loop through the cities array and create one marker for each city object
-        for (var i = 0; i < earthquakeData.length; i++) {
+  var earthquakeMarkers = [];
 
-            // Creating a colour variable
-            var color = "";
+  // Loop through the cities array and create one marker for each city object
+  for (var i = 0; i < earthquakeData.length; i++) {
 
-            // Using if statments to determine the colour of the marker based on the earthquake magnitude
-            if (earthquakeData[i].properties.mag > 5) {
-                color = '#cd3232';
-            }
-            else if (earthquakeData[i].properties.mag > 4) {
-                color = '#cd5932';
-            }
-            else if (earthquakeData[i].properties.mag > 3) {
-                color = '#cd8032';
-            }
-            else if (earthquakeData[i].properties.mag > 2) {
-                color = '#cda632';
-            }
-            else if (earthquakeData[i].properties.mag > 1) {
-                color = '#cdcd32';
-            }
-            else {
-                color = '#a6cd32';
-            }
-            
-            // obtaining coordinates of the ith earthquake
-            var location = [earthquakeData[i].geometry.coordinates[1], earthquakeData[i].geometry.coordinates[0]] // the json has them written as long,lat but need lat,long
-            
-            // Creating a circle marker for each earthquake
-            var earthquakes = L.circle(location, {
-                fillOpacity: 0.75,
-                color: color, // lookinto border colour
-                fillColor: color, // colour is based on if statement
-                radius: earthquakeData[i].properties.mag * 3000 // Adjusting radius based on magnitude of earthquake
-                }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
-                new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " 
-                + earthquakeData[i].properties.mag);
-                // setting the text of each marker
-            
-            earthquakeMarkers.push(earthquakes);
-        }
-        
-        // do I need to do this????
-        //L.layerGroup(earthquakeLayer);
-        // Sending our earthquakes layer to the createMap function
-        //createMap(earthquakeLayer);
+      // Creating a colour variable
+      var color = "";
 
-        var earthquakeLayer = L.layerGroup(earthquakeMarkers);
+      // Using if statments to determine the colour of the marker based on the earthquake magnitude
+      if (earthquakeData[i].properties.mag > 5) {
+          color = '#cd3232';
+      }
+      else if (earthquakeData[i].properties.mag > 4) {
+          color = '#cd5932';
+      }
+      else if (earthquakeData[i].properties.mag > 3) {
+          color = '#cd8032';
+      }
+      else if (earthquakeData[i].properties.mag > 2) {
+          color = '#cda632';
+      }
+      else if (earthquakeData[i].properties.mag > 1) {
+          color = '#cdcd32';
+      }
+      else {
+          color = '#a6cd32';
+      }
+      
+      // obtaining coordinates of the ith earthquake
+      var location = [earthquakeData[i].geometry.coordinates[1], earthquakeData[i].geometry.coordinates[0]] // the json has them written as long,lat but need lat,long
+      
+      // Creating a circle marker for each earthquake
+      var earthquakes = L.circle(location, {
+          fillOpacity: 0.75,
+          color: color, // lookinto border colour
+          fillColor: color, // colour is based on if statement
+          radius: earthquakeData[i].properties.mag * 3000 // Adjusting radius based on magnitude of earthquake
+          }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
+          new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " 
+          + earthquakeData[i].properties.mag);
+          // setting the text of each marker
+      
+      earthquakeMarkers.push(earthquakes);
+  };
 
-        // then out here would do
-        //createMap(earthquakeLayer, tectonicLayer);
+  var earthquakeLayer = L.layerGroup(earthquakeMarkers);
 
-        //console.log(earthquakeLayer);
+  // function to create for tectonic 
+  d3.json(tectonicPath, function(response) { 
+      
+    //checking
+    console.log(response)
+    console.log("hello")
 
+    // Define a function we want to run once for each feature (tectonic plate) in the geojson
+    // Give each feature a popup describing the plate name
+    function onEachFeature(feature, layer) {
+        layer.bindPopup("<h3>" + "Tectonic Plate Name: " + feature.properties.PlateName + "</h3><hr>");
+    };
 
-        // function to create for tectonic 
-      d3.json(tectonicPath, function(response) { 
-          
-        //checking
-        //console.log(response)
+    var myStyle = {
+        color: "orange",
+        weight: 2,
+        opacity: 0.65,
+        fillColor: "orange",
+        fillOpacity: 0
+    };
 
-        // Define a function we want to run once for each feature (tectonic plate) in the geojson
-        // Give each feature a popup describing the plate name
-        function onEachFeature(feature, layer) {
-            layer.bindPopup("<h3>" + "Tectonic Plate Name: " + feature.properties.PlateName + "</h3><hr>");
-        };
-
-        var myStyle = {
-            color: "orange",
-            weight: 5,
-            opacity: 0.65,
-            fillColor: "orange",
-            fillOpacity: 0
-        };
-
-        var tectonicPlates = L.geoJSON(response,{
-            style: myStyle,
-            onEachFeature: onEachFeature
-        });
-
-        var tectonicLayer = L.layerGroup(tectonicPlates);
-
-        createMap(earthquakeLayer, tectonicLayer);
-    })
-
-
-  // then out here would do
-  //createMap(earthquakeLayer, tectonicLayer);
-  // tp put the info from the two layers into the create map function
+    var tectonicLayer = L.geoJSON(response,{
+        style: myStyle,
+        onEachFeature: onEachFeature
     });
+    
+    console.log(tectonicLayer)
+    
+    // didn't need this part!!!
+    //var tectonicLayer = L.layerGroup(tectonicPlates);
 
-    //var earthquakeLayer = L.layerGroup(earthquakeMarkers);
+    createMap(earthquakeLayer, tectonicLayer);
+    //console.log(tectonicLayer)
+  });
 
-    // // function to create for tectonic 
-    // d3.json(tectonicPath, function(response, earthquakeLayer) { 
-        
-    //     //checking
-    //     //console.log(response)
+});  
 
-    //     // Define a function we want to run once for each feature (tectonic plate) in the geojson
-    //     // Give each feature a popup describing the plate name
-    //     function onEachFeature(feature, layer) {
-    //         layer.bindPopup("<h3>" + "Tectonic Plate Name: " + feature.properties.PlateName + "</h3><hr>");
-    //     };
-
-    //     var myStyle = {
-    //         color: "orange",
-    //         weight: 5,
-    //         opacity: 0.65,
-    //         fillColor: "orange",
-    //         fillOpacity: 0
-    //     };
-
-    //     var tectonicPlates = L.geoJSON(response,{
-    //         style: myStyle,
-    //         onEachFeature: onEachFeature
-    //     });
-
-    //     var tectonicLayer = L.layerGroup(tectonicPlates);
-
-    //     createMap(earthquakeLayer, tectonicLayer);
-    // })
-
-
-    // // then out here would do
-    // //createMap(earthquakeLayer, tectonicLayer);
-    // // tp put the info from the two layers into the create map function
-//};
 
 // might need to put the two d3.jsons in the one function along with create map
 // will need to invoke this function somewhere 
@@ -190,8 +144,8 @@ function createMap(earthquakeLayer, tectonicLayer) {
   
     // Create overlay object to hold our overlay layer
     var overlayMaps = {
-      Earthquakes: earthquakeLayer,
-      Tectonic: tectonicLayer
+      "Earthquake Layer": earthquakeLayer,
+      "Tectonic Layer": tectonicLayer
     };
   
     // Create our map, giving it the streetmap and earthquakes layers to display on load
