@@ -5,9 +5,9 @@ var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_we
 // Creating the map with centre coordinates and a zoom level
 var myMap = L.map("map", {
   center: [
-    40.7608, -111.8910 // not sure what this is pointing to so might update center, had been using 37.09, -95.71
+    40.7608, -111.8910 // setting the centre of the map
   ],
-  zoom: 4,
+  zoom: 4, // setting the zoom level
 });
 
 // Creating the lightmap layer and adding to 'myMap'
@@ -28,10 +28,10 @@ d3.json(queryUrl, function(data) {
     // testing
     // console.log(data.features);
     
-    // accessign the 'features' key of the json data
+    // accessing the 'features' key of the json data
     var earthquakeData = data.features;
 
-    // Looping through the cities array and creating one marker for each city object
+    // Looping through the earthquake data and creating one marker for each earthquake object
     for (var i = 0; i < earthquakeData.length; i++) {
 
         // Creating a colour variable
@@ -57,15 +57,15 @@ d3.json(queryUrl, function(data) {
             color = '#a6cd32';
         }
         
-        // obtaining coordinates of the ith earthquake
+        // Obtaining coordinates of the ith earthquake
         var location = [earthquakeData[i].geometry.coordinates[1], earthquakeData[i].geometry.coordinates[0]] // the json has them written as long,lat but need lat,long
         
         // Creating a circle marker for each earthquake
         var earthquakeMarker = L.circle(location, {
-            fillOpacity: 0.75,
-            color: color, // lookinto border colour
-            fillColor: color, // colour is based on if statement
-            radius: earthquakeData[i].properties.mag * 3000 // Adjusting radius based on magnitude of earthquake
+            radius: (20000 * earthquakeData[i].properties.mag), // Adjusting radius based on magnitude of earthquake
+            fillOpacity: 0.85,
+            color: color, // setting the border colour and fill colour
+            fillColor: color // colour is based on if statement
             }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
             new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " 
             + earthquakeData[i].properties.mag);
@@ -73,6 +73,9 @@ d3.json(queryUrl, function(data) {
         
         // adding each marker to the map
         earthquakeMarker.addTo(myMap);
+
+        console.log(earthquakeData[i].properties.mag)
+        console.log(typeof earthquakeData[i].properties.mag)
         
     };
     

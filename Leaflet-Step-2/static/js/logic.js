@@ -52,10 +52,10 @@ d3.json(earthquakeUrl, function(data) {
       
       // Creating a circle marker for each earthquake
       var earthquakes = L.circle(location, {
-          fillOpacity: 1,
+          fillOpacity: 0.85,
           color: color, // look into border colour
           fillColor: color, // colour is based on if statement
-          radius: earthquakeData[i].properties.mag * 25000 // Adjusting radius based on magnitude of earthquake
+          radius: (earthquakeData[i].properties.mag)* 25000 // Adjusting radius based on magnitude of earthquake
           }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
           new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " 
           + earthquakeData[i].properties.mag);
