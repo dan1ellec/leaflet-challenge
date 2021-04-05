@@ -4,33 +4,29 @@
 
 // Storing our API endpoint inside queryUrl
 // the url supplies all recorded earthquakes for the last 7 days
-//var earthquakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
-//  will activate at the bottom of the page 
-
-//var tectonicPath = "static/data/plates.json";
-
-//function layers(earthquakeUrl, tectonicPath) {
-
 var earthquakeUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
-  //  will activate at the bottom of the page 
-  
+
+// Storing the path to the tectonic plate json in a variable  
 var tectonicPath = "static/data/plates.json";
 
-    // function to create the markers for earthquake data
-    // Performing a GET request to the query URL using d3
+
+// Performing a GET request to the earthquake URL using d3
+// Then running a function on that data to create the markers for the earthquakes
 d3.json(earthquakeUrl, function(data) {
 
-  // Once we get a response, send the data.features object to the createFeatures function
-  console.log(data.features);
+  // testing
+  // console.log(data.features);
 
+  // Obtaining the features section of the json data
   var earthquakeData = data.features;
 
+  // Creating an empty earthquake markers array
   var earthquakeMarkers = [];
 
-  // Loop through the cities array and create one marker for each city object
+  // Looping through the earthquake data and creating one marker for each earthquake
   for (var i = 0; i < earthquakeData.length; i++) {
 
-      // Creating a colour variable
+      // Creating a colour variable 
       var color = "";
 
       // Using if statments to determine the colour of the marker based on the earthquake magnitude
@@ -59,7 +55,7 @@ d3.json(earthquakeUrl, function(data) {
       // Creating a circle marker for each earthquake
       var earthquakes = L.circle(location, {
           fillOpacity: 0.75,
-          color: color, // lookinto border colour
+          color: color, // look into border colour
           fillColor: color, // colour is based on if statement
           radius: earthquakeData[i].properties.mag * 3000 // Adjusting radius based on magnitude of earthquake
           }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
@@ -67,24 +63,24 @@ d3.json(earthquakeUrl, function(data) {
           + earthquakeData[i].properties.mag);
           // setting the text of each marker
       
+      // adding each individual earthquake marker to the earthquakeMarkers array
       earthquakeMarkers.push(earthquakes);
   };
 
+  // Setting the earthquakeMarkers array as a layer group 
   var earthquakeLayer = L.layerGroup(earthquakeMarkers);
 
-  // function to create for tectonic 
+  // Now accessing the tectonic plate json data using d3 
+  // Runnning function which creates the tectonic plate layer and binds a pop up
   d3.json(tectonicPath, function(response) { 
-      
-    //checking
-    console.log(response)
-    console.log("hello")
-
-    // Define a function we want to run once for each feature (tectonic plate) in the geojson
-    // Give each feature a popup describing the plate name
+  
+    // Defining a function we want to run once for each feature (tectonic plate) in the geojson
+    // Gives each feature a popup describing the plate name
     function onEachFeature(feature, layer) {
-        layer.bindPopup("<h3>" + "Tectonic Plate Name: " + feature.properties.PlateName + "</h3><hr>");
+        layer.bindPopup("<h4>" + "Tectonic Plate Name: " + feature.properties.PlateName + "</h4>");
     };
 
+    // Setting a style variable that contains the styling for the plates
     var myStyle = {
         color: "orange",
         weight: 2,
@@ -93,32 +89,27 @@ d3.json(earthquakeUrl, function(data) {
         fillOpacity: 0
     };
 
+    // Using L.geoJSON on the json data, setting the style as our style variable and 
+    // using the onEachFeature function created above
     var tectonicLayer = L.geoJSON(response,{
         style: myStyle,
         onEachFeature: onEachFeature
     });
     
-    console.log(tectonicLayer)
-    
-    // didn't need this part!!!
-    //var tectonicLayer = L.layerGroup(tectonicPlates);
-
-    createMap(earthquakeLayer, tectonicLayer);
     //console.log(tectonicLayer)
+
+    // Using earthquakeLayer and tectonicLayer as the variables for the createMap function
+    // This will run the createMap function below with this data
+    createMap(earthquakeLayer, tectonicLayer);
+
   });
 
 });  
 
-
-// might need to put the two d3.jsons in the one function along with create map
-// will need to invoke this function somewhere 
-// or do I put in same function
-
-// function to create the map
-
+// function which creates the map
 function createMap(earthquakeLayer, tectonicLayer) {
 
-    // Define streetmap and darkmap layers
+    // Defining streetmap layer
     var streetmap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
       tileSize: 512,
@@ -128,6 +119,7 @@ function createMap(earthquakeLayer, tectonicLayer) {
       accessToken: API_KEY
     });
   
+    // Defining darkmap layer
     var darkmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
       attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
       maxZoom: 18,
@@ -135,47 +127,43 @@ function createMap(earthquakeLayer, tectonicLayer) {
       accessToken: API_KEY
     });
   
-    // Define a baseMaps object to hold our base layers
+    // Defining a baseMaps object to hold the base layers
     var baseMaps = {
       "Street Map": streetmap,
       "Dark Map": darkmap
     };
-    // base maps mutually excllusive
   
-    // Create overlay object to hold our overlay layer
+    // Creating an overlayMaps object to hold the overlay layers
     var overlayMaps = {
-      "Earthquake Layer": earthquakeLayer,
-      "Tectonic Layer": tectonicLayer
+      "Earthquakes": earthquakeLayer,
+      "Fault Lines": tectonicLayer
     };
   
-    // Create our map, giving it the streetmap and earthquakes layers to display on load
+    // Creating the map, giving it the streetmap and earthquakes layers to display on load
     var myMap = L.map("map", {
       center: [
-        37.09, -95.71 // not sure what this is pointing to so might update center
+        37.09, -95.71 // setting the centre of the map
       ],
-      zoom: 3,
+      zoom: 3, // setting the zoom level
       layers: [streetmap, earthquakeLayer]
     });
   
-    // Create a layer control
-    // Pass in our baseMaps and overlayMaps
-    // Add the layer control to the map
+    // Creating a layer control by passing in baseMaps and overlayMaps
     L.control.layers(baseMaps, overlayMaps, {
       collapsed: false
     }).addTo(myMap);
+    // then adding the layer control to the map
 
-
-    // LEGEND
-    // creating a lengend and setting it to the bottom right of webpage
+    
+    // Creating a legend and setting it to the bottom right of webpage
     var legend = L.control({position: 'bottomright'});
 
-    // Adding the content of the legend thorugh the following function
+    // Adding the content of the legend through the following function
     legend.onAdd = function() {
 
-        // giving classes to the legendfor css styling
+        // giving classes to the legend for css styling
         var div = L.DomUtil.create('div', 'info legend'),
-            grades = [0, 1, 2, 3, 4, 5] // setting the magnitude grades for the the lengend
-            //labels = [];
+            grades = [0, 1, 2, 3, 4, 5] // setting the magnitude grades for the legend
 
         // setting the colour scale based on earthquake magnitude
         function getColor(m) {
@@ -187,7 +175,7 @@ function createMap(earthquakeLayer, tectonicLayer) {
                               '#a6cd32' ;
           }
 
-        // looping through the intervals set in 'grades' and generating a label with a coloured square for each interval
+        // looping through the intervals set in 'grades' array and generating a label with a coloured square for each interval
         for (var i = 0; i < grades.length; i++) {
             div.innerHTML +=
                 '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
@@ -196,13 +184,7 @@ function createMap(earthquakeLayer, tectonicLayer) {
         return div;
     };
 
-    // Adding the legend
+    // Adding the legend to the map
     legend.addTo(myMap);
 };
   
-
-
-// adding control that displays options
-
-// runnign function
-
