@@ -1,6 +1,4 @@
-// TRYING BETTER LAYOUT
-
-
+// Part 2 - bonus
 
 // Storing our API endpoint inside queryUrl
 // the url supplies all recorded earthquakes for the last 7 days
@@ -54,10 +52,10 @@ d3.json(earthquakeUrl, function(data) {
       
       // Creating a circle marker for each earthquake
       var earthquakes = L.circle(location, {
-          fillOpacity: 0.75,
+          fillOpacity: 1,
           color: color, // look into border colour
           fillColor: color, // colour is based on if statement
-          radius: earthquakeData[i].properties.mag * 3000 // Adjusting radius based on magnitude of earthquake
+          radius: earthquakeData[i].properties.mag * 25000 // Adjusting radius based on magnitude of earthquake
           }).bindPopup("<h3>" + earthquakeData[i].properties.place + "</h3><hr><p>" + 
           new Date(earthquakeData[i].properties.time) + "</p>" + "<br>" + "Magnitude: " 
           + earthquakeData[i].properties.mag);
@@ -126,11 +124,20 @@ function createMap(earthquakeLayer, tectonicLayer) {
       id: "dark-v10",
       accessToken: API_KEY
     });
+
+    // Defining lightmap layer
+    var lightmap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+      attribution: "Map data &copy; <a href=\"https://www.openstreetmap.org/\">OpenStreetMap</a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA</a>, Imagery © <a href=\"https://www.mapbox.com/\">Mapbox</a>",
+      maxZoom: 18,
+      id: "light-v10",
+      accessToken: API_KEY
+    });
   
     // Defining a baseMaps object to hold the base layers
     var baseMaps = {
       "Street Map": streetmap,
-      "Dark Map": darkmap
+      "Dark Map": darkmap,
+      "Light Map": lightmap
     };
   
     // Creating an overlayMaps object to hold the overlay layers
@@ -142,9 +149,9 @@ function createMap(earthquakeLayer, tectonicLayer) {
     // Creating the map, giving it the streetmap and earthquakes layers to display on load
     var myMap = L.map("map", {
       center: [
-        37.09, -95.71 // setting the centre of the map
+        32.3078, -57 // setting the centre of the map
       ],
-      zoom: 3, // setting the zoom level
+      zoom: 3.3, // setting the zoom level
       layers: [streetmap, earthquakeLayer]
     });
   
